@@ -8,6 +8,6 @@ ykv2mp4.py [input_folder] [output_folder]
 https://wwp.lanzout.com/b007sqnw4h  
 password:5484  
   
-#please save the files in ffmpeg/bin/ to folder ffmpeg.  
+#please download ffmpeg and save the files in ffmpeg/bin/ to folder ffmpeg.  
 https://ffmpeg.org/download.html  
   
