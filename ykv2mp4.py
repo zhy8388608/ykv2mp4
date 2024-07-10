@@ -5,6 +5,8 @@ import subprocess
 import sys
 import shutil
 
+temp_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp')
+
 def read_last_bytes(input_file, num_bytes):
 	with open(input_file, 'rb') as f:
 		f.seek(-num_bytes, 2)
@@ -52,26 +54,16 @@ def unpack_files(packed_file, output_path):
 	return count, type
 
 def ykv2mp4(input_file, output_file):
-	temp_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp')
-	os.makedirs(temp_folder, exist_ok=True)
-
 	count, type = unpack_files(input_file, temp_folder)
 
-	ffmpeg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg', 'ffmpeg.exe')
+	os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+	ffmpeg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg', 'ffmpeg')
 	concat = 'concat:'
 	for i in range(1, count+1):
 		concat += os.path.join(temp_folder, f'{i}.{type}|')
-	args = []
-	args.append('-i')
-	args.append(concat)
-	args.append('-c')
-	args.append('copy')
-	args.append('-y')
-	args.append(output_file)
-
+	args = ['-i', concat, '-c', 'copy', '-y', output_file]
 	subprocess.run([ffmpeg_path] + args)
-
-	shutil.rmtree(temp_folder)
 
 def process_folder(input_folder, output_folder):
 	for entry in os.scandir(input_folder):
@@ -84,9 +76,11 @@ def process_folder(input_folder, output_folder):
 				else:
 					ykv2mp4(entry.path, output_file)
 		elif entry.is_dir():
-			process_folder(entry.path, output_folder)
+			process_folder(entry.path, os.path.join(output_folder, entry.name))
 
 def main():
+	os.makedirs(temp_folder, exist_ok=True)
+
 	if os.path.isfile(sys.argv[1]):
 		for i in sys.argv[1:]:
 			name = os.path.basename(sys.argv[1]).replace('.ykv', '.mp4')
@@ -98,6 +92,10 @@ def main():
 		output_folder = sys.argv[2]
 		os.makedirs(output_folder, exist_ok=True)
 		process_folder(input_folder, output_folder)
+
+	print('Done.')
+
+	shutil.rmtree(temp_folder)
 
 if __name__ == "__main__":
 	main()
