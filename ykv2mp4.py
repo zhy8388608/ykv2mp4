@@ -59,10 +59,13 @@ def ykv2mp4(input_file, output_file):
 	os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
 	ffmpeg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg', 'ffmpeg')
-	concat = 'concat:'
-	for i in range(1, count+1):
-		concat += os.path.join(temp_folder, f'{i}.{type}|')
-	args = ['-i', concat, '-c', 'copy', '-y', output_file]
+	txt_path = os.path.join(temp_folder, 'video.txt')
+
+	with open(txt_path, 'wb') as out_f:
+		for i in range(1, count+1):
+			out_f.write(f"file '{os.path.join(temp_folder, f'{i}.{type}')}'\n".encode('utf-8'))
+
+	args = ['-f', 'concat','-safe', '0', '-i', txt_path, '-c', 'copy', '-y', output_file]
 	subprocess.run([ffmpeg_path] + args)
 
 def process_folder(input_folder, output_folder):
