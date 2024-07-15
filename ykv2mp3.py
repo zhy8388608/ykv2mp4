@@ -29,21 +29,13 @@ def unpack_files(packed_file, output_path):
 	with open(info_input_file, 'w', encoding='utf-8') as info_f:
 		json.dump(files_info, info_f, indent=2)
 
-	for file_info in files_info:
-		filename = file_info['name']
-		if filename == 'dbInfo':
-			pay_info = json.loads(file_info['info']['configInfo']['ups']['data']['data']['controller']['pay_info_ext'])['stage']
-			if pay_info != '':
-				return 0, 0
-			break
-
 	count = 0
 
 	with open(packed_file, 'rb') as packed_f:
 		for file_info in files_info:
 			filename = file_info['name']
 			if filename == 'dbInfo':
-				continue
+				break
 			offset = file_info['offset']
 			size = file_info['size']
 
@@ -64,10 +56,6 @@ def unpack_files(packed_file, output_path):
 def ykv2mp4(input_file, output_file):
 	count, type = unpack_files(input_file, temp_folder)
 
-	if count == 0:
-		print('Failed.')
-		return
-
 	os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
 	ffmpeg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg', 'ffmpeg')
@@ -77,7 +65,7 @@ def ykv2mp4(input_file, output_file):
 		for i in range(1, count+1):
 			out_f.write(f"file '{os.path.join(temp_folder, f'{i}.{type}')}'\n".encode('utf-8'))
 
-	args = ['-f', 'concat','-safe', '0', '-i', txt_path, '-c', 'copy', '-y', output_file]
+	args = ['-f', 'concat','-safe', '0', '-i', txt_path, '-c', 'copy', '-y', '-vn', '-c:a', 'libmp3lame', output_file]
 	subprocess.run([ffmpeg_path] + args)
 
 def process_folder(input_folder, output_folder):
@@ -85,13 +73,11 @@ def process_folder(input_folder, output_folder):
 		if entry.is_file():
 			if entry.name.endswith(".ykv"):
 				print(entry.path)
-				output_file = os.path.join(output_folder, entry.name.replace('.ykv', '.mp4'))
+				output_file = os.path.join(output_folder, entry.name.replace('.ykv', '.mp3'))
 				if os.path.exists(output_file):
-					print('Skipped.')
+					print('Skipped')
 				else:
 					ykv2mp4(entry.path, output_file)
-		elif entry.is_dir():
-			process_folder(entry.path, os.path.join(output_folder, entry.name))
 
 def main():
 	os.makedirs(temp_folder, exist_ok=True)
