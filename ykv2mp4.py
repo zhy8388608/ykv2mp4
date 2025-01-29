@@ -34,7 +34,7 @@ def unpack_files(packed_file, output_path):
 		if filename == 'dbInfo':
 			pay_info = json.loads(file_info['info']['configInfo']['ups']['data']['data']['controller']['pay_info_ext'])['stage']
 			if pay_info != '':
-				print('Conversion may fail:', packed_file)
+				print('Conversion may fail.')
 				#return 0, 0
 			break
 
