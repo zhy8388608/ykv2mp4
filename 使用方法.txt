@@ -1,0 +1,2 @@
+直接将ykv文件拖到ykv2mp4.exe上
+或者批量将ykv文件放入in文件夹，再运行run.cmd，输出在out文件夹
